@@ -1,6 +1,9 @@
 const express = require("express");
 const dotenv = require("dotenv")
 const connectDB = require("./config/database");
+const userRoutes = require("./routes/userRoutes");
+const bookRoutes = require("./routes/bookRoutes");
+const reviewroutes = require("./routes/reviewRoutes");
 
 // Load environment variables from .env file
 dotenv.config();
@@ -13,6 +16,11 @@ const app = express();
 
 // Middleware to parse JSON request bodies
 app.use(express.json());
+
+//Routes
+app.use("/api/users", userRoutes);
+app.use("/api/books", bookRoutes);
+app.use("/api/reviews", reviewroutes);
 
 // Default route
 app.get("/", (req, res) => {
