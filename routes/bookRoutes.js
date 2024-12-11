@@ -7,6 +7,14 @@ router.post("/", async (req, res) => {
     const { title, author, description } = req.body;
 
     try {
+        //Check if book exists
+        const bookExists = await Book.findOne({ title, author });
+
+        if (bookExists) {
+            return res.status(400).json({ error: "Book already exists" });
+        }
+
+        //Create new book
         const book = new Book({
             title,
             author,
@@ -16,6 +24,7 @@ router.post("/", async (req, res) => {
         await book.save();
 
         res.status(201).json({ message: "Book created successfully" });
+        
     } catch (error) {
         res.status(500).json({ error: "Server error" });
     }
@@ -24,7 +33,7 @@ router.post("/", async (req, res) => {
 //Get all books
 router.get("/", async (req, res) => {
     try {
-        const books = await Book.find();
+        const books = await Book.find().populate("reviews");
 
         //Loop through all books and calculate average rating for each book
         const booksWithAvgRating = await Promise.all(
@@ -43,7 +52,7 @@ router.get("/", async (req, res) => {
 //Get book by ID
 router.get("/:id", async (req, res) => {
     try {
-        const book = await Book.findById(req.params.id);
+        const book = await Book.findById(req.params.id).populate("reviews");
         if(!book) {
             return res.status(404).json({ error: "Book not found" });
         }
