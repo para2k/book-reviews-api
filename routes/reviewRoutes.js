@@ -19,12 +19,14 @@ router.post("/:bookId", protect, async (req, res) => {
              //Create review
              const review = new Review({
                 book: bookId,
-                user: req.user._id,
+                user: req.user.id,
                 content,
                 rating,
              });
 
              await review.save();
+             book.reviews.push(review);
+             await book.save();
 
              res.status(201).json(review);
 
@@ -44,7 +46,7 @@ router.get("/:bookId", async (req, res) => {
 });
 
 //Update a review by ID (auth required, only author can update)
-router.patch("/id", protect, async (req, res) => {
+router.patch("/:id", protect, async (req, res) => {
     try {
         const review = await Review.findByIdAndUpdate(req.params.id, req.body, { new: true });
 
@@ -52,7 +54,7 @@ router.patch("/id", protect, async (req, res) => {
             return res.status(404).json({ error: "Review not found" });
         }
 
-        if(review.user.toString() !== req.user._id) {
+        if(review.user.toString() !== req.user.id) {
             return res.status(401).json({ error: "Not authorized to update this review!" });
         }
 
@@ -73,7 +75,7 @@ router.delete("/:id", protect,  async (req, res) => {
             return res.status(404).json({ error: "Review not found" });
         }
 
-        if(review.user.toString() !== req.user._id) {
+        if(review.user.toString() !== req.user.id) {
             return res.status(403).json({ error: "Not authorized to delete this review!" });
         }
 
