@@ -1,9 +1,11 @@
 const express = require("express");
 const dotenv = require("dotenv")
 const connectDB = require("./config/database");
+const swaggerUi = require("swagger-ui-express");
+const swaggerDocs = require("./config/swagger");
+const reviewroutes = require("./routes/reviewRoutes");
 const userRoutes = require("./routes/userRoutes");
 const bookRoutes = require("./routes/bookRoutes");
-const reviewroutes = require("./routes/reviewRoutes");
 
 // Load environment variables from .env file
 dotenv.config();
@@ -16,6 +18,15 @@ const app = express();
 
 // Middleware to parse JSON request bodies
 app.use(express.json());
+
+// Swagger documentation
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
+//Docs in JSON format
+app.get("/api-docs.json", (req, res) => {
+    res.setHeader("Content-Type", "application/json");
+    res.send(swaggerDocs);
+});
 
 //Routes
 app.use("/api/users", userRoutes);
