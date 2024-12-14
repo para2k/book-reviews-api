@@ -4,40 +4,6 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const router = express.Router();
 
-/**
- * @swagger
- * /api/users/register:
- *   post:
- *     summary: Register a new user
- *     tags: [Users]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *                 description: Full name of the user
- *                 example: "John Doe"
- *               email:
- *                 type: string
- *                 description: Email address of the user
- *                 example: "johndoe@example.com"
- *               password:
- *                 type: string
- *                 description: Password for the user account
- *                 example: "securepassword123"
- *     responses:
- *       201:
- *         description: User created successfully
- *       400:
- *         description: User already exists
- *       500:
- *         description: Server error
- */
-
 //Register new user
 router.post("/register", async (req, res) => {
     const { name, email, password } = req.body;
@@ -63,45 +29,6 @@ router.post("/register", async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 });
-
-/**
- * @swagger
- * /api/users/login:
- *   post:
- *     summary: Login user and generate JWT token
- *     tags: [Users]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *                 description: Email address of the user
- *                 example: "johndoe@example.com"
- *               password:
- *                 type: string
- *                 description: Password for the user account
- *                 example: "securepassword123"
- *     responses:
- *       200:
- *         description: Successfully logged in and JWT token generated
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 token:
- *                   type: string
- *                   description: JWT token for the logged-in user
- *       400:
- *         description: Invalid credentials
- *       500:
- *         description: Server error
- */
-
 
 //Login user and generate JWT token
 router.post("/login", async (req, res) => {
@@ -133,28 +60,6 @@ router.post("/login", async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 });
-
-/**
- * @swagger
- * /api/users/me:
- *   get:
- *     summary: Get logged-in user's data (Authenticated)
- *     tags: [Users]
- *     security:
- *        -bearerAuth: []  # Authentication using JWT
- *     responses:
- *       200:
- *         description: Successfully retrieved user data
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/User'
- *       404:
- *         description: User not found
- *       500:
- *         description: Server error
- */
-
 
 //Get logged-in user's data (Authenticated)
 router.get("/me", protect,  async (req, res) => {
