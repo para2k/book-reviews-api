@@ -72,7 +72,7 @@ const swaggerOptions = {
                         }
                     },
                     required: ["book", "user", "content", "rating"],
-                }, 
+                },
                 User: {
                     type: "object",
                     properties: {
@@ -110,11 +110,345 @@ const swaggerOptions = {
                 },
             },
         },
-        security: [
-            {
-               bearerAuth: []
-            }
-        ]
+        // security: [
+        //     {
+        //         bearerAuth: []
+        //     }
+        // ]
+        paths: {
+            "/api/users/register": {
+                post: {
+                    summary: "Register a new user",
+                    tags: ["Users"],
+                    requestBody: {
+                        required: true,
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        name: {
+                                            type: "string",
+                                            description: "Full name of the user",
+                                            example: "John Doe",
+                                        },
+                                        email: {
+                                            type: "string",
+                                            description: "Email address of the user",
+                                            example: "johndoe@example.com",
+                                        },
+                                        password: {
+                                            type: "string",
+                                            description: "Password for the user account",
+                                            example: "securepassword123",
+                                        },
+                                    },
+                                    required: ["name", "email", "password"],
+                                },
+                            },
+                        },
+                    },
+                    responses: {
+                        "201": {
+                            description: "User created successfully",
+                        },
+                        "400": {
+                            description: "User already exists",
+                        },
+                        "500": {
+                            description: "Server error",
+                        },
+                    },
+                },
+            },
+            "/api/users/login": {
+                post: {
+                    summary: "Login user and generate JWT token",
+                    tags: ["Users"],
+                    requestBody: {
+                        required: true,
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        email: {
+                                            type: "string",
+                                            description: "Email address of the user",
+                                            example: "johndoe@example.com",
+                                        },
+                                        password: {
+                                            type: "string",
+                                            description: "Password for the user account",
+                                            example: "securepassword123",
+                                        },
+                                    },
+                                    required: ["email", "password"],
+                                },
+                            },
+                        },
+                    },
+                    responses: {
+                        "200": {
+                            description: "Successfully logged in and JWT token generated",
+                            content: {
+                                "application/json": {
+                                    schema: {
+                                        type: "object",
+                                        properties: {
+                                            token: {
+                                                type: "string",
+                                                description: "JWT token for the logged-in user",
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                        "400": {
+                            description: "Invalid credentials",
+                        },
+                        "500": {
+                            description: "Server error",
+                        },
+                    },
+                },
+            },
+            "/api/users/me": {
+                get: {
+                    security: [
+                        {
+                            bearerAuth: []
+                        }
+                    ],
+                    tags: ["Users"],
+                    summary: "Get current user",
+                    responses: {
+                        "200": {
+                            description: "Successful operation",
+                            content: {
+                                "application/json": {
+                                    schema: {
+                                        $ref: "#/components/schemas/User"
+                                    }
+                                }
+                            }
+                        },
+                        "401": {
+                            description: "Unauthorized",
+                        },
+                        "404": {
+                            description: "User not found",
+                        },
+                        "500": {
+                            description: "Server error",
+                        }
+                    }
+                }
+            },
+            "/api/books/{bookId}/reviews": {
+                post: {
+                    security: [
+                        {
+                            bearerAuth: []
+                        }
+                    ],
+                    tags: ["Reviews"],
+                    summary: "Create a new review for a book",
+                    parameters: [
+                        {
+                            name: "bookId",
+                            in: "path",
+                            description: "ID of the book to review",
+                            required: true,
+                            schema: {
+                                type: "string"
+                            }
+                        }
+                    ],
+                    requestBody: {
+                        required: true,
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        rating: {
+                                            type: "number",
+                                            description: "Rating given for the book",
+                                            example: 4.5
+                                        },
+                                        content: {
+                                            type: "string",
+                                            description: "Comment on the book",
+                                            example: "Great book!"
+                                        }
+                                    },
+                                    required: ["rating", "content"]
+                                }
+                            }
+                        }
+                    },
+                    responses: {
+                        201: {
+                            description: "Review created successfully",
+                            content: {
+                                "application/json": {
+                                    schema: {
+                                        $ref: "#/components/schemas/Review"
+                                    }
+                                }
+                            }
+                        },
+                        400: {
+                            description: "Review already exists"
+                        },
+                        401: {
+                            description: "Unauthorized",
+                        },
+                        404: {
+                            description: "Book not found"
+                        },
+                        500: {
+                            description: "Server error"
+                        }
+                    }
+                },
+                get: {
+                    tags: ["Reviews"],
+                    summary: "Get all reviews for a book",
+                    parameters: [
+                        {
+                            name: "bookId",
+                            in: "path",
+                            description: "ID of the book to retrieve reviews for",
+                            required: true,
+                            schema: {
+                                type: "string"
+                            }
+                        }
+                    ],
+                    responses: {
+                        "200": {
+                            description: "Successful operation",
+                            content: {
+                                "application/json": {
+                                    schema: {
+                                        type: "array",
+                                        items: {
+                                            $ref: "#/components/schemas/Review"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "404": {
+                            description: "Book not found",
+                        },
+                        "500": {
+                            description: "Server error",
+                        },
+                    },
+                },
+            },
+            "/api/reviews/{reviewId}": {
+                patch: {
+                    security: [
+                        {
+                            bearerAuth: []
+                        }
+                    ],
+                    tags: ["Reviews"],
+                    summary: "Update a review by ID",
+                    parameters: [
+                        {
+                            name: "reviewId",
+                            in: "path",
+                            description: "ID of the review to update",
+                            required: true,
+                            schema: {
+                                type: "string"
+                            }
+                        }
+                    ],
+                    requestBody: {
+                        required: true,
+                        content: {
+                            "application/json": {
+                                type: "object",
+                                properties: {
+                                    rating: {
+                                        type: "number",
+                                        description: "New rating for the review",
+                                        example: 4
+                                    },
+                                    comment: {
+                                        type: "string",
+                                        description: "New comment for the review",
+                                        example: "Great book!"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    responses: {
+                        "200": {
+                            description: "Review updated successfully",
+                            content: {
+                                "application/json": {
+                                    schema: {
+                                        $ref: "#/components/schemas/Review"
+                                    }
+                                }
+                            }
+                        },
+                        "401": {
+                            description: "Unauthorized",
+                        },
+                        "404": {
+                            description: "Review not found",
+                        },
+                        "500": {
+                            description: "Server error",
+                        }
+                    }
+                },
+                delete: {
+                    security: [
+                        {
+                            bearerAuth: []
+                        }
+                    ],
+                    tags: ["Reviews"],
+                    summary: "Delete a review by ID",
+                    parameters: [
+                        {
+                            name: "reviewId",
+                            in: "path",
+                            description: "ID of the review to delete",
+                            required: true,
+                            schema: {
+                                type: "string"
+                            }
+                        }
+                    ],
+                    responses: {
+                        "204": {
+                            description: "Review deleted successfully",
+                        },
+                        "401": {
+                            description: "Unauthorized",
+                        },
+                        "404": {
+                            description: "Review not found",
+                        },
+                        "500": {
+                            description: "Server error",
+                        },
+                    },
+                },
+            },
+        },
     },
     apis: [
         "./routes/userRoutes.js",
