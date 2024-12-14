@@ -4,47 +4,6 @@ const Book = require("../models/Book");
 const protect = require("../middleware/auth");
 const router = express.Router();
 
-//Create new review for a book (auth required)
-router.post("/:bookId", protect, async (req, res) => {
-    const { bookId } = req.params;
-    const { content, rating } = req.body;
-
-    try {
-        const book = await Book.findById(bookId);
-
-        if (!book) { 
-             return res.status(404).json({ error: "Book not found" });
-             }
-
-             //Create review
-             const review = new Review({
-                book: bookId,
-                user: req.user.id,
-                content,
-                rating,
-             });
-
-             await review.save();
-             book.reviews.push(review);
-             await book.save();
-
-             res.status(201).json(review);
-
-    } catch (error) {
-        res.status(500).json({ error: "Server error" });
-    }
-});
-
-//Get reviews for a specific book (No auth required)
-router.get("/:bookId", async (req, res) => {
-    try {
-        const reviews = await Review.find({ book: req.params.bookId });
-        res.json(reviews);
-    } catch (error) {
-        res.status(500).json({ error: "Server error" });
-    }
-});
-
 //Update a review by ID (auth required, only author can update)
 router.patch("/:id", protect, async (req, res) => {
     try {

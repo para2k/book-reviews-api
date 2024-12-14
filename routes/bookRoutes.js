@@ -1,6 +1,8 @@
 const express = require("express");
 const Book = require("../models/Book");
+const Review = require("../models/Review");
 const router = express.Router();
+const protect = require("../middleware/auth");
 
 /**
  * @swagger
@@ -248,6 +250,65 @@ router.delete("/:id", async (req, res) => {
         }
 
         res.json({ message: "Book deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+/// Reviews ///
+
+//Create new review for a book (auth required)
+router.post("/:bookId/reviews", protect, async (req, res) => {
+    const { bookId } = req.params;
+    const { content, rating } = req.body;
+
+    try {
+        const book = await Book.findById(bookId);
+
+        if (!book) {
+            return res.status(404).json({ error: "Book not found" });
+        }
+
+        const existingReview = await Review.findOne({ 
+            book: bookId, 
+            user: req.user.id, 
+            content, 
+            rating });
+
+        if (existingReview) {
+            return res.status(400).json({ error: "Review already exists" });
+        }
+
+        //Create review
+        const review = new Review({
+            book: bookId,
+            user: req.user.id,
+            content,
+            rating,
+        });
+
+        await review.save();
+        book.reviews.push(review);
+        await book.save();
+
+        res.status(201).json(review);
+
+    } catch (error) {
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+//Get reviews for a specific book (No auth required)
+router.get("/:bookId/reviews", async (req, res) => {
+    try {
+        const book = await Book.findById(req.params.bookId);
+
+        if (!book) {
+            return res.status(404).json({ error: "Book not found" });
+        }
+
+        const reviews = await Review.find({ book: req.params.bookId });
+        res.json(reviews);
     } catch (error) {
         res.status(500).json({ error: "Server error" });
     }
